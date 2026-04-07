@@ -1,4 +1,4 @@
-﻿#pragma warning disable IDE0031, IDE0079
+﻿#pragma warning disable IDE0031
 
 using UnityEngine;
 using PvZStarSignTranslator.Managers;
@@ -70,8 +70,6 @@ namespace PvZStarSignTranslator.Features
 
             // F5 untuk Reload Translasi (Berfungsi)
             if (Input.GetKeyDown(KeyCode.F5)) ReloadTranslationsCommand();
-
-            // F6 untuk Reload Textures (Belum diimplementasikan, dibiarkan kosong)
 
             if (IsOpen)
             {
@@ -165,13 +163,13 @@ namespace PvZStarSignTranslator.Features
             GUILayout.Space(10);
 
             // --- CUSTOM FONT (BELUM ADA - DISABLE) ---
-            GUI.enabled = false; // Mematikan interaksi UI
+            GUI.enabled = false;
             GUILayout.BeginVertical("box");
             DrawSectionHeader("---- Custom Font Settings ----");
             GUILayout.Button("Browse Custom Font... (WIP)", GUILayout.Height(35));
             GUILayout.Label("Feature not yet implemented in StarSign.", new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, normal = new GUIStyleState() { textColor = Color.gray } });
             GUILayout.EndVertical();
-            GUI.enabled = true; // Menyalakan interaksi UI kembali
+            GUI.enabled = true;
             GUILayout.Space(10);
 
             // --- COMMAND PANEL ---
@@ -213,7 +211,7 @@ namespace PvZStarSignTranslator.Features
             DrawToggle("Auto Indent Almanac Text", false);
             GUI.enabled = true;
 
-            // Berfungsi (Akan dihubungkan di patcher nanti)
+            // Berfungsi
             EnableUIOverrides = DrawToggle("Enable UI Overrides", EnableUIOverrides);
 
             GUILayout.EndVertical();
@@ -245,20 +243,37 @@ namespace PvZStarSignTranslator.Features
             GUI.enabled = true;
             GUILayout.Space(10);
 
-            // --- TEXT DUMPING & DETECTION ---
+            // --- TEXT DUMPING & SCANNING ---
             GUILayout.BeginVertical("box");
-            DrawSectionHeader("---- Text Detection & Dumping ----");
+            DrawSectionHeader("---- Text Dumping & Scanning ----");
 
             // Berfungsi
             bool prevDumpState = TextDumper.EnableDump;
             TextDumper.EnableDump = DrawToggle("Enable Text Auto-Dumper", TextDumper.EnableDump);
-            if (TextDumper.EnableDump != prevDumpState) NotificationSystem.CreateNotificationUI(string.Format("Auto Dumper {0}", TextDumper.EnableDump ? "ON" : "OFF"), TextDumper.EnableDump ? Color.green : Color.red);
+            if (TextDumper.EnableDump != prevDumpState)
+            {
+                NotificationSystem.CreateNotificationUI(string.Format("Auto Dumper {0}", TextDumper.EnableDump ? "ON" : "OFF"), TextDumper.EnableDump ? Color.green : Color.red);
+            }
 
             PathDetector.IsEnabled = DrawToggle("Enable Path Scanner (Ctrl+RMB)", PathDetector.IsEnabled);
             PathDetector.IsAdvanced = DrawToggle("Enable Adv. Scanner Details", PathDetector.IsAdvanced);
             EnableRegex = DrawToggle("Enable Regex Processing", EnableRegex);
 
             GUILayout.EndVertical();
+            GUILayout.Space(10);
+
+            // --- TEXT DETECTION (KATEGORI DIKEMBALIKAN - SEMENTARA DISABLE) ---
+            GUI.enabled = false;
+            GUILayout.BeginVertical("box");
+            DrawSectionHeader("---- Text Detection ----");
+            DrawToggle("Enable IMGUI", false);
+            DrawToggle("Enable UGUI", false);
+            DrawToggle("Enable NGUI", false);
+            DrawToggle("Enable TextMesh", false);
+            DrawToggle("Enable TextMeshPro", false);
+            DrawNAToggle("Enable FairyGUI");
+            GUILayout.EndVertical();
+            GUI.enabled = true;
             GUILayout.Space(10);
 
             // --- SPECIAL FEATURES (BELUM ADA - DISABLE) ---
@@ -303,13 +318,25 @@ namespace PvZStarSignTranslator.Features
             GUIStyle btnStyle = new GUIStyle(GUI.skin.button);
             btnStyle.normal.textColor = value ? Color.green : Color.red;
 
-            // Kalau tombol diklik, balikan nilai true/false nya
             if (GUILayout.Button(value ? "ON" : "OFF", btnStyle, GUILayout.Width(50)))
             {
                 value = !value;
             }
             GUILayout.EndHorizontal();
             return value;
+        }
+
+        private void DrawNAToggle(string label)
+        {
+            GUILayout.BeginHorizontal();
+            GUIStyle labelStyle = new GUIStyle(GUI.skin.label) { fontStyle = FontStyle.Bold };
+            labelStyle.normal.textColor = Color.gray;
+            GUILayout.Label(label, labelStyle, GUILayout.Width(240));
+            GUILayout.FlexibleSpace();
+            GUIStyle naStyle = new GUIStyle(GUI.skin.box) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
+            naStyle.normal.textColor = Color.gray;
+            GUILayout.Label("N/A", naStyle, GUILayout.Width(50));
+            GUILayout.EndHorizontal();
         }
 
         private void DrawStatusRow(string label, string value, float width = 50f)

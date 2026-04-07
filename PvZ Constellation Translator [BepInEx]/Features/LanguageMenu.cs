@@ -1,4 +1,4 @@
-﻿#pragma warning disable IDE0031, IDE0270, IDE0079
+﻿#pragma warning disable IDE0031
 
 using BepInEx.Configuration;
 using PvZStarSignTranslator.Managers;
@@ -130,14 +130,17 @@ namespace PvZStarSignTranslator.Features
             string arrow = isDropdownOpen ? " ▲" : " ▼";
             string fullText = CurrentLanguage + arrow;
 
+            // Deteksi dan Modifikasi untuk UGUI Text
             Text t = customDropdownBtn.GetComponentInChildren<Text>();
             if (t != null)
             {
                 t.text = fullText;
                 t.resizeTextForBestFit = false;
                 t.fontSize = ConfigButtonFontSize.Value;
+                Plugin.Log.LogInfo("[Language Menu] Tipe teks terdeteksi: UGUI Text pada tombol dropdown utama.");
             }
 
+            // Deteksi dan Modifikasi untuk TextMeshPro
             System.Type tmpType = HarmonyLib.AccessTools.TypeByName("TMPro.TMP_Text");
             if (tmpType != null)
             {
@@ -147,7 +150,16 @@ namespace PvZStarSignTranslator.Features
                     tmpType.GetProperty("text")?.SetValue(tmpComp, fullText, null);
                     tmpType.GetProperty("enableAutoSizing")?.SetValue(tmpComp, false, null);
                     tmpType.GetProperty("fontSize")?.SetValue(tmpComp, (float)ConfigButtonFontSize.Value, null);
+                    Plugin.Log.LogInfo("[Language Menu] Tipe teks terdeteksi: TextMeshPro (TMP) pada tombol dropdown utama.");
                 }
+            }
+
+            // Deteksi dan Modifikasi untuk Legacy TextMesh (3D Text)
+            TextMesh tm = customDropdownBtn.GetComponentInChildren<TextMesh>();
+            if (tm != null)
+            {
+                tm.text = fullText;
+                Plugin.Log.LogInfo("[Language Menu] Tipe teks terdeteksi: TextMesh (Legacy 3D) pada tombol dropdown utama.");
             }
         }
 
@@ -194,14 +206,17 @@ namespace PvZStarSignTranslator.Features
             Transform childPanel = item.transform.Find("LanguageListPanel");
             if (childPanel != null) Object.Destroy(childPanel.gameObject);
 
+            // Deteksi untuk Item List: UGUI Text
             Text t = item.GetComponentInChildren<Text>();
             if (t != null)
             {
                 t.text = langName;
                 t.resizeTextForBestFit = false;
                 t.fontSize = ConfigButtonFontSize.Value;
+                Plugin.Log.LogInfo("[Language Menu] Tipe teks terdeteksi: UGUI Text pada item list '" + langName + "'.");
             }
 
+            // Deteksi untuk Item List: TextMeshPro
             System.Type tmpType = HarmonyLib.AccessTools.TypeByName("TMPro.TMP_Text");
             if (tmpType != null)
             {
@@ -211,7 +226,16 @@ namespace PvZStarSignTranslator.Features
                     tmpType.GetProperty("text")?.SetValue(tmpComp, langName, null);
                     tmpType.GetProperty("enableAutoSizing")?.SetValue(tmpComp, false, null);
                     tmpType.GetProperty("fontSize")?.SetValue(tmpComp, (float)ConfigButtonFontSize.Value, null);
+                    Plugin.Log.LogInfo("[Language Menu] Tipe teks terdeteksi: TextMeshPro (TMP) pada item list '" + langName + "'.");
                 }
+            }
+
+            // Deteksi untuk Item List: Legacy TextMesh (3D Text)
+            TextMesh tm = item.GetComponentInChildren<TextMesh>();
+            if (tm != null)
+            {
+                tm.text = langName;
+                Plugin.Log.LogInfo("[Language Menu] Tipe teks terdeteksi: TextMesh (Legacy 3D) pada item list '" + langName + "'.");
             }
 
             Button btn = item.GetComponent<Button>();
@@ -271,7 +295,6 @@ namespace PvZStarSignTranslator.Features
 
             Image boxImg = dialogBox.AddComponent<Image>();
 
-            // [UPDATE BARU] Mengambil Sprite "取名界面" (Naming Interface) dari game!
             // Cek path yang ada spasinya maupun tidak (mengantisipasi log scanner)
             GameObject bgSource = GameObject.Find("/菜单界面画布/面板/调节关卡面板/面板区/一键获取所有植物面 板/背景");
             if (bgSource == null) bgSource = GameObject.Find("/菜单界面画布/面板/调节关卡面板/面板区/一键获取所有植物面板/背景");
@@ -342,14 +365,32 @@ namespace PvZStarSignTranslator.Features
             Transform listChild = btnObj.transform.Find("LanguageListPanel");
             if (listChild != null) Object.Destroy(listChild.gameObject);
 
+            // Deteksi untuk Tombol di Dialog: UGUI Text
             Text t = btnObj.GetComponentInChildren<Text>();
-            if (t != null) t.text = newText;
+            if (t != null)
+            {
+                t.text = newText;
+                Plugin.Log.LogInfo("[Language Menu] Tipe teks terdeteksi: UGUI Text pada tombol dialog '" + btnObj.name + "'.");
+            }
 
+            // Deteksi untuk Tombol di Dialog: TextMeshPro
             System.Type tmpType = HarmonyLib.AccessTools.TypeByName("TMPro.TMP_Text");
             if (tmpType != null)
             {
                 var tmpComp = btnObj.GetComponentInChildren(tmpType);
-                if (tmpComp != null) tmpType.GetProperty("text")?.SetValue(tmpComp, newText, null);
+                if (tmpComp != null)
+                {
+                    tmpType.GetProperty("text")?.SetValue(tmpComp, newText, null);
+                    Plugin.Log.LogInfo("[Language Menu] Tipe teks terdeteksi: TextMeshPro (TMP) pada tombol dialog '" + btnObj.name + "'.");
+                }
+            }
+
+            // Deteksi untuk Tombol di Dialog: Legacy TextMesh (3D Text)
+            TextMesh tm = btnObj.GetComponentInChildren<TextMesh>();
+            if (tm != null)
+            {
+                tm.text = newText;
+                Plugin.Log.LogInfo("[Language Menu] Tipe teks terdeteksi: TextMesh (Legacy 3D) pada tombol dialog '" + btnObj.name + "'.");
             }
         }
 
