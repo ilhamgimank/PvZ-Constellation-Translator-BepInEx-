@@ -481,6 +481,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Features\DeveloperMenu.cs" />
     <Compile Include="Features\Dumpers\TMPDumper.cs" />
     <Compile Include="Features\LanguageMenu.cs" />
     <Compile Include="Features\NotificationSystem.cs" />

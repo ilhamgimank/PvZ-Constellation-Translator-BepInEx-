@@ -9,7 +9,6 @@ using PvZStarSignTranslator.Patches;
 
 namespace PvZStarSignTranslator
 {
-    // Update ke v0.2.1: Polish UI (Dialog Konfirmasi & Notifikasi)
     [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
     public class Plugin : BaseUnityPlugin
     {
@@ -31,6 +30,9 @@ namespace PvZStarSignTranslator
             _harmony = new Harmony(MyPluginInfo.PLUGIN_GUID);
             TextPatch.PatchAll(_harmony);
 
+            // [FIX] Menempelkan komponen DeveloperMenu ke game agar tombol F12 dan OnGUI bisa berjalan
+            gameObject.AddComponent<DeveloperMenu>();
+
             Log.LogInfo(string.Format("Mod engine v{0} is now active.", MyPluginInfo.PLUGIN_VERSION));
         }
 
@@ -48,6 +50,6 @@ namespace PvZStarSignTranslator
     {
         public const string PLUGIN_GUID = "com.ilhamgimank.pvz.starsign.translator";
         public const string PLUGIN_NAME = "PvZ Constellation Translator";
-        public const string PLUGIN_VERSION = "0.2.1"; // Versi naik ke 0.2.1
+        public const string PLUGIN_VERSION = "0.2.2";
     }
 }
