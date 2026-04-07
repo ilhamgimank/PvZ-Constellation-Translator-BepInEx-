@@ -483,6 +483,7 @@
   <ItemGroup>
     <Compile Include="Features\Dumpers\TMPDumper.cs" />
     <Compile Include="Features\LanguageMenu.cs" />
+    <Compile Include="Features\NotificationSystem.cs" />
     <Compile Include="Features\PathDetector.cs" />
     <Compile Include="Features\Dumpers\UGUIDumper.cs" />
     <Compile Include="Features\TextDumper.cs" />
