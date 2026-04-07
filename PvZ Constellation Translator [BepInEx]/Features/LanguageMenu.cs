@@ -1,11 +1,12 @@
-﻿#pragma warning disable IDE0031 // Menyembunyikan peringatan Visual Studio tentang pengecekan null yang bisa disingkat
+﻿#pragma warning disable IDE0031, IDE0270, IDE0079
 
-using UnityEngine;
-using UnityEngine.UI;
-using System.IO;
-using BepInEx.Configuration; // Wajib untuk menggunakan fitur ConfigFile (config.ini)
+using BepInEx.Configuration;
 using PvZStarSignTranslator.Managers;
 using PvZStarSignTranslator.Patches;
+using System.IO;
+using Unity.VisualScripting;
+using UnityEngine;
+using UnityEngine.UI;
 
 namespace PvZStarSignTranslator.Features
 {
@@ -13,87 +14,67 @@ namespace PvZStarSignTranslator.Features
     public static class LanguageMenu
     {
         // ==========================================================
-        // VARIABEL OBJEK UI (Menyimpan referensi elemen yang kita buat)
+        // VARIABEL OBJEK UI
         // ==========================================================
-        private static GameObject customDropdownBtn;   // Tombol utama menu bahasa
-        private static GameObject dropdownListPanel;   // Panel background yang isinya daftar bahasa (Indo, Eng, dll)
-        private static GameObject languageLabelObj;    // Teks tulisan "Language:" di atas tombol
-        private static GameObject languageConfirmPanel;// Panel pop-up konfirmasi
+        private static GameObject customDropdownBtn;
+        private static GameObject dropdownListPanel;
+        private static GameObject languageLabelObj;
+        private static GameObject languageConfirmPanel;
 
-        // Variabel Status & Data
-        public static bool isDropdownOpen = false;     // Menyimpan status apakah daftar dropdown lagi kebuka atau ketutup
-        public static string CurrentLanguage = "Chinese"; // Bahasa bawaan saat game baru pertama kali dibuka
+        public static bool isDropdownOpen = false;
+        public static string CurrentLanguage = "Chinese";
 
         // ==========================================================
-        // VARIABEL KONFIGURASI (Untuk menyimpan pengaturan ke config.ini)
+        // VARIABEL KONFIGURASI
         // ==========================================================
         public static ConfigFile ModConfig;
-        public static ConfigEntry<string> ConfigLanguage;       // Menyimpan bahasa terakhir yang dipilih user
-        public static ConfigEntry<int> ConfigLabelFontSize;     // Mengatur ukuran font tulisan "Language:"
-        public static ConfigEntry<float> ConfigLabelOffsetX;    // Mengatur geseran posisi Kanan/Kiri tulisan "Language:"
-        public static ConfigEntry<float> ConfigLabelOffsetY;    // Mengatur geseran posisi Atas/Bawah tulisan "Language:"
-        public static ConfigEntry<int> ConfigButtonFontSize;    // Mengatur ukuran font di dalam tombol dropdown
-        public static ConfigEntry<int> ConfigDialogTitleFontSize; // Mengatur ukuran judul dialog konfirmasi
+        public static ConfigEntry<string> ConfigLanguage;
+        public static ConfigEntry<int> ConfigLabelFontSize;
+        public static ConfigEntry<float> ConfigLabelOffsetX;
+        public static ConfigEntry<float> ConfigLabelOffsetY;
+        public static ConfigEntry<int> ConfigButtonFontSize;
+        public static ConfigEntry<int> ConfigDialogTitleFontSize;
 
-        // ==========================================================
-        // FUNGSI INISIALISASI KONFIGURASI
-        // ==========================================================
         public static void InitConfig()
         {
-            // Menentukan lokasi file config.ini (BepInEx/plugins/PvZ Constellation Translator/config.ini)
             string configPath = Path.Combine(FileManager.RootFolder, "config.ini");
             ModConfig = new ConfigFile(configPath, true);
 
-            // Bind berfungsi untuk membaca config, atau membuatnya dengan nilai default jika belum ada
             ConfigLanguage = ModConfig.Bind("General", "Language", "Chinese", "Bahasa yang aktif saat ini.");
             ConfigLabelFontSize = ModConfig.Bind("UI Settings", "LabelFontSize", 35, "Ukuran teks label 'Language'.");
             ConfigLabelOffsetX = ModConfig.Bind("UI Settings", "LabelOffsetX", 0f, "Geseran posisi X (Kanan/Kiri) untuk label.");
             ConfigLabelOffsetY = ModConfig.Bind("UI Settings", "LabelOffsetY", 65f, "Geseran posisi Y (Atas/Bawah) untuk label.");
-            ConfigButtonFontSize = ModConfig.Bind("UI Settings", "ButtonFontSize", 30, "Ukuran teks di dalam tombol dropdown (Indonesian, English, dll).");
+            ConfigButtonFontSize = ModConfig.Bind("UI Settings", "ButtonFontSize", 30, "Ukuran teks di dalam tombol dropdown.");
             ConfigDialogTitleFontSize = ModConfig.Bind("UI Settings", "DialogTitleFontSize", 40, "Ukuran teks judul pada dialog konfirmasi bahasa.");
 
-            // Set bahasa saat ini sesuai dengan yang ada di file config.ini
             CurrentLanguage = ConfigLanguage.Value;
         }
 
-        // ==========================================================
-        // FUNGSI UPDATE (Dipanggil terus-menerus setiap frame game oleh Plugin.cs)
-        // ==========================================================
         public static void Update()
         {
-            // Pastikan config sudah dimuat. Jika belum, muat sekarang.
             if (ModConfig == null) InitConfig();
 
-            // KUNCI UTAMA: Kita mencari tombol asli game (Dapatkan Semua Tanaman) untuk dijadikan patokan
             GameObject targetBtn = GameObject.Find("/菜单界面画布/面板/调节关卡面板/按键区/一键获取所有植物按键");
 
-            // Jika tombol asli game KETEMU dan SEDANG TAMPIL di layar...
             if (targetBtn != null && targetBtn.activeInHierarchy)
             {
-                // ...dan tombol mod kita belum dibuat, maka BUAT TOMBOLNYA SEKARANG.
                 if (customDropdownBtn == null) CreateDropdownMenu(targetBtn);
             }
-            // Tapi jika tombol asli game NGILANG (misal user nutup panel pengaturan)...
             else if (customDropdownBtn != null && customDropdownBtn.activeSelf)
             {
-                // ...maka SEMBUNYIKAN juga semua UI mod kita biar gak melayang sendirian di layar.
                 HideAllUI();
             }
         }
 
-        // Fungsi bantuan untuk menyembunyikan semua objek UI mod kita
         private static void HideAllUI()
         {
             customDropdownBtn?.SetActive(false);
             languageLabelObj?.SetActive(false);
             dropdownListPanel?.SetActive(false);
-            languageConfirmPanel?.SetActive(false); // Tutup dialog konfirmasi kalau panel ditutup
+            languageConfirmPanel?.SetActive(false);
             isDropdownOpen = false;
         }
 
-        // ==========================================================
-        // PEMBUATAN UI UTAMA (Tombol Menu)
-        // ==========================================================
         private static void CreateDropdownMenu(GameObject targetBtn)
         {
             customDropdownBtn = Object.Instantiate(targetBtn, targetBtn.transform.parent);
@@ -241,14 +222,12 @@ namespace PvZStarSignTranslator.Features
         // ==========================================================
         // EKSEKUSI PEMILIHAN BAHASA & DIALOG KONFIRMASI
         // ==========================================================
-        // Dipanggil saat salah satu bahasa di-klik
         private static void OnLanguageSelected(string langName)
         {
             isDropdownOpen = false;
             dropdownListPanel?.SetActive(false);
             UpdateMenuVisuals();
 
-            // CEGAH SPAM: Jika bahasa yang dipilih SAMA dengan yang dipakai, munculkan notifikasi penolakan
             if (CurrentLanguage == langName)
             {
                 string msg = langName == "Indonesian" ? "Bahasa ini sudah digunakan!" : (langName == "Chinese" ? "该语言已在使用！" : "Language already in use!");
@@ -256,77 +235,87 @@ namespace PvZStarSignTranslator.Features
                 return;
             }
 
-            // Jika beda, panggil dialog konfirmasi!
             ShowConfirmDialog(langName);
         }
 
-        // Fungsi untuk membuat dan menampilkan Pop-Up Konfirmasi
         private static void ShowConfirmDialog(string targetLang)
         {
-            // Hancurkan panel lama jika ada, biar selalu fresh
             if (languageConfirmPanel != null) Object.Destroy(languageConfirmPanel);
 
-            // Cari Canvas Utama di game StarSign untuk menempelkan pop-up kita
             GameObject mainCanvas = GameObject.Find("/菜单界面画布");
             if (mainCanvas == null)
             {
-                Plugin.Log.LogWarning("Main Canvas tidak ditemukan, langsung ubah bahasa tanpa dialog.");
+                Plugin.Log.LogWarning("Main Canvas tidak ditemukan, langsung ubah bahasa.");
                 ApplyLanguage(targetLang);
                 return;
             }
 
-            // 1. Buat Background Hitam Transparan (Blocker) layar penuh
+            // 1. Background Hitam Transparan (Blocker)
             languageConfirmPanel = new GameObject("LanguageConfirmPanel");
             languageConfirmPanel.transform.SetParent(mainCanvas.transform, false);
-            languageConfirmPanel.transform.SetAsLastSibling(); // Paling depan
+            languageConfirmPanel.transform.SetAsLastSibling();
 
             RectTransform bgRt = languageConfirmPanel.AddComponent<RectTransform>();
             bgRt.anchorMin = Vector2.zero; bgRt.anchorMax = Vector2.one;
             bgRt.offsetMin = Vector2.zero; bgRt.offsetMax = Vector2.zero;
 
             Image bgImg = languageConfirmPanel.AddComponent<Image>();
-            bgImg.color = new Color(0, 0, 0, 0.85f); // Hitam transparan
-
-            // Tambah Button kosong agar klik tidak tembus ke UI di belakangnya
+            bgImg.color = new Color(0, 0, 0, 0.85f);
             languageConfirmPanel.AddComponent<Button>();
 
-            // 2. Buat Kotak Dialog di tengah layar
+            // 2. Kotak Dialog
             GameObject dialogBox = new GameObject("DialogBox");
             dialogBox.transform.SetParent(languageConfirmPanel.transform, false);
             RectTransform boxRt = dialogBox.AddComponent<RectTransform>();
-            boxRt.sizeDelta = new Vector2(750, 400); // Ukuran kotak dialog
             boxRt.anchoredPosition = Vector2.zero;
 
             Image boxImg = dialogBox.AddComponent<Image>();
-            boxImg.color = new Color(0.15f, 0.15f, 0.2f, 1f); // Warna Navy gelap biar elegan
-            dialogBox.AddComponent<Outline>().effectColor = Color.white; // Border putih
 
-            // 3. Buat Teks Judul
+            // [UPDATE BARU] Mengambil Sprite "取名界面" (Naming Interface) dari game!
+            // Cek path yang ada spasinya maupun tidak (mengantisipasi log scanner)
+            GameObject bgSource = GameObject.Find("/菜单界面画布/面板/调节关卡面板/面板区/一键获取所有植物面 板/背景");
+            if (bgSource == null) bgSource = GameObject.Find("/菜单界面画布/面板/调节关卡面板/面板区/一键获取所有植物面板/背景");
+
+            if (bgSource != null && bgSource.TryGetComponent<Image>(out Image sourceImg) && sourceImg.sprite != null)
+            {
+                boxRt.sizeDelta = new Vector2(800, 520); // Skala proporsional 800x520 (aslinya 970x700)
+                boxImg.sprite = sourceImg.sprite;
+                boxImg.type = sourceImg.type;
+                boxImg.color = Color.white; // Kembalikan ke warna tekstur asli
+            }
+            else
+            {
+                // Fallback kalau sprite gagal di-load
+                boxRt.sizeDelta = new Vector2(750, 400);
+                boxImg.color = new Color(0.15f, 0.15f, 0.2f, 1f);
+                dialogBox.AddComponent<Outline>().effectColor = Color.white;
+            }
+
+            // 3. Teks Judul
             GameObject titleObj = new GameObject("TitleText");
             titleObj.transform.SetParent(dialogBox.transform, false);
             Text titleTxt = titleObj.AddComponent<Text>();
-            titleTxt.font = Resources.GetBuiltinResource<Font>("Cambria.ttf");
+            titleTxt.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
             titleTxt.fontSize = ConfigDialogTitleFontSize.Value;
             titleTxt.color = Color.white;
             titleTxt.alignment = TextAnchor.MiddleCenter;
 
-            // Sesuaikan bahasa teks dialog dengan bahasa yang SEDANG AKTIF
             string titleMsg = $"Change language to {targetLang}?";
             if (CurrentLanguage == "Indonesian") titleMsg = $"Ganti bahasa ke {targetLang}?";
             else if (CurrentLanguage == "Chinese") titleMsg = $"将语言更改为 {targetLang}？";
             titleTxt.text = titleMsg;
+            titleTxt.AddComponent<Outline>().effectColor = Color.black; // Biar lebih kebaca
 
             RectTransform titleRt = titleObj.GetComponent<RectTransform>();
             titleRt.sizeDelta = new Vector2(700, 100);
-            titleRt.anchoredPosition = new Vector2(0, 80); // Posisikan di atas
+            titleRt.anchoredPosition = new Vector2(0, 100); // Digeser agak ke atas
 
-            // 4. Kloning Tombol untuk Konfirmasi (Biar bentuknya mirip tombol game asli)
+            // 4. Tombol Confirm
             GameObject btnConfirm = Object.Instantiate(customDropdownBtn, dialogBox.transform);
             btnConfirm.name = "BtnConfirm";
             RectTransform confRt = btnConfirm.GetComponent<RectTransform>();
-            confRt.anchoredPosition = new Vector2(-160, -80); // Kiri Bawah
+            confRt.anchoredPosition = new Vector2(-160, -100); // Kiri Bawah
 
-            // Atur teks Confirm
             string confStr = (CurrentLanguage == "Indonesian") ? "Iya" : (CurrentLanguage == "Chinese" ? "确定" : "Yes");
             SetButtonText(btnConfirm, confStr);
 
@@ -334,33 +323,28 @@ namespace PvZStarSignTranslator.Features
             confAction.onClick = new Button.ButtonClickedEvent();
             confAction.onClick.AddListener(() => ApplyLanguage(targetLang));
 
-            // 5. Kloning Tombol untuk Cancel
+            // 5. Tombol Cancel
             GameObject btnCancel = Object.Instantiate(customDropdownBtn, dialogBox.transform);
             btnCancel.name = "BtnCancel";
             RectTransform cancRt = btnCancel.GetComponent<RectTransform>();
-            cancRt.anchoredPosition = new Vector2(160, -80); // Kanan Bawah
+            cancRt.anchoredPosition = new Vector2(160, -100); // Kanan Bawah
 
-            // Atur teks Cancel
             string cancStr = (CurrentLanguage == "Indonesian") ? "Ga" : (CurrentLanguage == "Chinese" ? "取消" : "No");
             SetButtonText(btnCancel, cancStr);
 
             Button cancAction = btnCancel.GetComponent<Button>();
             cancAction.onClick = new Button.ButtonClickedEvent();
-            cancAction.onClick.AddListener(() => Object.Destroy(languageConfirmPanel)); // Tutup panel jika batal
+            cancAction.onClick.AddListener(() => Object.Destroy(languageConfirmPanel));
         }
 
-        // Fungsi bantuan untuk mengubah teks di tombol kloningan
         private static void SetButtonText(GameObject btnObj, string newText)
         {
-            // Hapus list anakan kalau ada
             Transform listChild = btnObj.transform.Find("LanguageListPanel");
             if (listChild != null) Object.Destroy(listChild.gameObject);
 
-            // Ganti teks biasa
             Text t = btnObj.GetComponentInChildren<Text>();
             if (t != null) t.text = newText;
 
-            // Ganti teks TMPro
             System.Type tmpType = HarmonyLib.AccessTools.TypeByName("TMPro.TMP_Text");
             if (tmpType != null)
             {
@@ -369,24 +353,19 @@ namespace PvZStarSignTranslator.Features
             }
         }
 
-        // Fungsi pamungkas untuk mengubah sistem game ke bahasa baru
         private static void ApplyLanguage(string langName)
         {
-            // Simpan bahasa
             CurrentLanguage = langName;
             ConfigLanguage.Value = langName;
             ModConfig.Save();
 
-            // Terjemahkan!
             TranslationManager.LoadTranslations();
             UpdateLabelText();
             TextPatch.RefreshAllTexts();
             UpdateMenuVisuals();
 
-            // Hancurkan panel konfirmasi
             if (languageConfirmPanel != null) Object.Destroy(languageConfirmPanel);
 
-            // Memanggil Notifikasi dari file NotificationSystem.cs
             string msg = langName == "Indonesian" ? "Bahasa berhasil diubah!" : (langName == "Chinese" ? "语言更改成功！" : "Language changed successfully!");
             NotificationSystem.CreateNotificationUI(msg, Color.green);
 

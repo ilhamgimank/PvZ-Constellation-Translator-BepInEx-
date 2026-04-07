@@ -50,6 +50,6 @@ namespace PvZStarSignTranslator
     {
         public const string PLUGIN_GUID = "com.ilhamgimank.pvz.starsign.translator";
         public const string PLUGIN_NAME = "PvZ Constellation Translator";
-        public const string PLUGIN_VERSION = "0.2.2";
+        public const string PLUGIN_VERSION = "0.2.3";
     }
 }
