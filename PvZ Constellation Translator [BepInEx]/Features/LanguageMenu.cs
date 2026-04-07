@@ -1,4 +1,4 @@
-﻿#pragma warning disable IDE0031
+﻿#pragma warning disable IDE0031, IDE0270
 
 using BepInEx.Configuration;
 using PvZStarSignTranslator.Managers;
@@ -282,6 +282,7 @@ namespace PvZStarSignTranslator.Features
             RectTransform bgRt = languageConfirmPanel.AddComponent<RectTransform>();
             bgRt.anchorMin = Vector2.zero; bgRt.anchorMax = Vector2.one;
             bgRt.offsetMin = Vector2.zero; bgRt.offsetMax = Vector2.zero;
+            bgRt.localScale = Vector3.one;
 
             Image bgImg = languageConfirmPanel.AddComponent<Image>();
             bgImg.color = new Color(0, 0, 0, 0.85f);
@@ -291,6 +292,10 @@ namespace PvZStarSignTranslator.Features
             GameObject dialogBox = new GameObject("DialogBox");
             dialogBox.transform.SetParent(languageConfirmPanel.transform, false);
             RectTransform boxRt = dialogBox.AddComponent<RectTransform>();
+            boxRt.localScale = Vector3.one; // Pastikan panel tidak gepeng
+            boxRt.anchorMin = new Vector2(0.5f, 0.5f);
+            boxRt.anchorMax = new Vector2(0.5f, 0.5f);
+            boxRt.pivot = new Vector2(0.5f, 0.5f);
             boxRt.anchoredPosition = Vector2.zero;
 
             Image boxImg = dialogBox.AddComponent<Image>();
@@ -330,6 +335,10 @@ namespace PvZStarSignTranslator.Features
             titleTxt.AddComponent<Outline>().effectColor = Color.black; // Biar lebih kebaca
 
             RectTransform titleRt = titleObj.GetComponent<RectTransform>();
+            titleRt.localScale = Vector3.one;
+            titleRt.anchorMin = new Vector2(0.5f, 0.5f);
+            titleRt.anchorMax = new Vector2(0.5f, 0.5f);
+            titleRt.pivot = new Vector2(0.5f, 0.5f);
             titleRt.sizeDelta = new Vector2(700, 100);
             titleRt.anchoredPosition = new Vector2(0, 100); // Digeser agak ke atas
 
@@ -337,6 +346,13 @@ namespace PvZStarSignTranslator.Features
             GameObject btnConfirm = Object.Instantiate(customDropdownBtn, dialogBox.transform);
             btnConfirm.name = "BtnConfirm";
             RectTransform confRt = btnConfirm.GetComponent<RectTransform>();
+
+            // [FIX] Reset Scale & Atur Ulang Ukuran agar Tombol Presisi
+            confRt.localScale = Vector3.one;
+            confRt.anchorMin = new Vector2(0.5f, 0.5f);
+            confRt.anchorMax = new Vector2(0.5f, 0.5f);
+            confRt.pivot = new Vector2(0.5f, 0.5f);
+            confRt.sizeDelta = new Vector2(240, 80); // Set ukuran proporsional
             confRt.anchoredPosition = new Vector2(-160, -100); // Kiri Bawah
 
             string confStr = (CurrentLanguage == "Indonesian") ? "Iya" : (CurrentLanguage == "Chinese" ? "确定" : "Yes");
@@ -350,6 +366,13 @@ namespace PvZStarSignTranslator.Features
             GameObject btnCancel = Object.Instantiate(customDropdownBtn, dialogBox.transform);
             btnCancel.name = "BtnCancel";
             RectTransform cancRt = btnCancel.GetComponent<RectTransform>();
+
+            // [FIX] Reset Scale & Atur Ulang Ukuran agar Tombol Presisi
+            cancRt.localScale = Vector3.one;
+            cancRt.anchorMin = new Vector2(0.5f, 0.5f);
+            cancRt.anchorMax = new Vector2(0.5f, 0.5f);
+            cancRt.pivot = new Vector2(0.5f, 0.5f);
+            cancRt.sizeDelta = new Vector2(240, 80); // Set ukuran proporsional
             cancRt.anchoredPosition = new Vector2(160, -100); // Kanan Bawah
 
             string cancStr = (CurrentLanguage == "Indonesian") ? "Ga" : (CurrentLanguage == "Chinese" ? "取消" : "No");
@@ -370,6 +393,9 @@ namespace PvZStarSignTranslator.Features
             if (t != null)
             {
                 t.text = newText;
+                t.resizeTextForBestFit = false;
+                t.fontSize = ConfigButtonFontSize.Value; // Gunakan ukuran teks dari config
+                t.alignment = TextAnchor.MiddleCenter;
                 Plugin.Log.LogInfo("[Language Menu] Tipe teks terdeteksi: UGUI Text pada tombol dialog '" + btnObj.name + "'.");
             }
 
@@ -381,6 +407,8 @@ namespace PvZStarSignTranslator.Features
                 if (tmpComp != null)
                 {
                     tmpType.GetProperty("text")?.SetValue(tmpComp, newText, null);
+                    tmpType.GetProperty("enableAutoSizing")?.SetValue(tmpComp, false, null);
+                    tmpType.GetProperty("fontSize")?.SetValue(tmpComp, (float)ConfigButtonFontSize.Value, null);
                     Plugin.Log.LogInfo("[Language Menu] Tipe teks terdeteksi: TextMeshPro (TMP) pada tombol dialog '" + btnObj.name + "'.");
                 }
             }

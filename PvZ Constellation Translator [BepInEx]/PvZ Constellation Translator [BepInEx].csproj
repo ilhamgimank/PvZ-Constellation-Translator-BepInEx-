@@ -482,6 +482,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Features\DeveloperMenu.cs" />
+    <Compile Include="Features\Dumpers\FairyGUIDumper.cs" />
+    <Compile Include="Features\Dumpers\IMGUIDumper.cs" />
+    <Compile Include="Features\Dumpers\NGUIDumper.cs" />
+    <Compile Include="Features\Dumpers\TextMeshDumper.cs" />
     <Compile Include="Features\Dumpers\TMPDumper.cs" />
     <Compile Include="Features\LanguageMenu.cs" />
     <Compile Include="Features\NotificationSystem.cs" />

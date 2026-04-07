@@ -1,5 +1,4 @@
-﻿#pragma warning disable IDE0060 // Remove unused parameter
-using UnityEngine;
+﻿using UnityEngine;
 using System.Text.RegularExpressions;
 using PvZStarSignTranslator.Managers;
 
@@ -9,12 +8,46 @@ namespace PvZStarSignTranslator.Features
     {
         public static bool EnableDump = true;
 
-        // Prefix unused parameter with underscore to fix IDE0060
+        // Variabel toggle pemisah deteksi per komponen
+        public static bool EnableIMGUI = true;
+        public static bool EnableUGUI = true;
+        public static bool EnableNGUI = false;
+        public static bool EnableTextMesh = true;
+        public static bool EnableTMP = true;
+        public static bool EnableFairyGUI = false;
+
+        // [FIX] Fungsi untuk mengekstrak teks komponen apa saja menggunakan Reflection
+        public static bool TryGetReflectionText(Component component, out string text)
+        {
+            text = null;
+            if (component == null) return false;
+
+            var prop = component.GetType().GetProperty("text");
+            if (prop != null && prop.PropertyType == typeof(string))
+            {
+                text = prop.GetValue(component, null) as string;
+                return true;
+            }
+            return false;
+        }
+
+        // Mendeteksi dan menyimpan teks Mandarin yang belum ada di database
         public static void DumpText(string text, string _sourceType = "Text")
         {
             if (string.IsNullOrWhiteSpace(text) || !EnableDump) return;
 
+            // Pengecekan tipe komponen untuk mengizinkan atau menahan dump
+            if (_sourceType == "IMGUI" && !EnableIMGUI) return;
+            if (_sourceType.Contains("Text") && !_sourceType.Contains("Mesh") && !EnableUGUI) return; // UGUI Text
+            if (_sourceType.Contains("TextMeshPro") && !EnableTMP) return;
+            if (_sourceType == "TextMesh" && !EnableTextMesh) return;
+            if (_sourceType == "NGUI" && !EnableNGUI) return;
+            if (_sourceType == "FairyGUI" && !EnableFairyGUI) return;
+
+            // Filter: Hanya ambil teks yang mengandung karakter Mandarin
             if (!Regex.IsMatch(text, @"\p{IsCJKUnifiedIdeographs}")) return;
+
+            // Abaikan jika sudah diterjemahkan
             if (TranslationManager.Translations.ContainsKey(text)) return;
 
             try
@@ -29,31 +62,14 @@ namespace PvZStarSignTranslator.Features
 
                 int insertPos = json.IndexOf('{') + 1;
                 string comma = json.Contains(":") ? "," : "";
-                // Fix String Interpolation
                 string newEntry = string.Format("\n  \"{0}\": \"{1}\"{2}", cleanText, cleanText, comma);
 
                 json = json.Insert(insertPos, newEntry);
                 System.IO.File.WriteAllText(path, json, System.Text.Encoding.UTF8);
 
-                Plugin.Log.LogInfo("Added to dump: " + text);
+                Plugin.Log.LogInfo(string.Format("New text dumped [{0}]: {1}", _sourceType, text));
             }
-            catch (System.Exception ex) { Plugin.Log.LogError("Dump Error: " + ex.Message); }
-        }
-
-        public static bool TryGetReflectionText(GameObject obj, string componentName, out string result)
-        {
-            result = "";
-            Component comp = obj.GetComponent(componentName);
-            if (comp != null)
-            {
-                var prop = comp.GetType().GetProperty("text");
-                if (prop != null)
-                {
-                    result = prop.GetValue(comp, null) as string;
-                    return true;
-                }
-            }
-            return false;
+            catch (System.Exception ex) { Plugin.Log.LogError("Dump Failed: " + ex.Message); }
         }
 
         public static string EscapeForJson(string s)
